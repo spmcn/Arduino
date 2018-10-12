@@ -1,0 +1,13 @@
+#######################################
+# Syntax Coloring Map For Sampling Lib
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+tc_config	KEYWORD2
+tc_start	KEYWORD2
+tc_reset	KEYWORD2
+tc_disable	KEYWORD2
+tc_setFreq	KEYWORD2
+tc_clearIntFlag	KEYWORD2
