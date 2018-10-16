@@ -26,8 +26,11 @@ bool stateLED = 0;
 int count = 0;
 int sample_cycles = 0;
 
+unsigned long enterTime = 0;
+unsigned long exitTime = 0;
 void setup() {
   Serial.begin(115200);
+  while(!Serial); // wait until Serial is ready
   pinMode(LED_PIN,OUTPUT);
 
   //initialize flash and mount fs
@@ -43,17 +46,31 @@ void setup() {
   }
   Serial.println("Mounted filesystem");
   
-  tc_config(sampleRate,0);    //comment me out to run successfully
-  tc_start();                 //comment me out to run successfully
+  tc_config(sampleRate,7);    //Sean: changed from 0 to 7
+  tc_start();                 //Sean: timer should be working now
+
+  // Serial outputs to test TC5_Handler functions
+  Serial.print("Starting time: ");
+  Serial.print(millis());
+  Serial.print(" ms");
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Serial.println("Test");
-  delay(10000L);
+  //Serial.println("Test");
+  //delay(10000L);
 }
 
-/*void TC5_Handler (void) {
+void TC5_Handler (void) {
+  enterTime = millis();
+  Serial.print("It has been ");
+  Serial.print(enterTime - exitTime);
+  Serial.println(" ms");
+  
+  Serial.print("Entering TC5_Handler at: ");
+  Serial.print(millis());
+  Serial.println(" ms");
+  /*
   File dataFile = fatfs.open(FILE_NAME,FILE_WRITE);
   if(dataFile){
     if(count>9 && count<109) tc_setFreq(10);
@@ -83,6 +100,14 @@ void loop() {
     tc_disable();
     Serial.println("Done sampling.");
   }
-  
+  */
+
+
+  Serial.print("Exiting TC5_Handler at: ");
+  Serial.print(millis());
+  Serial.println(" ms");
+  Serial.println();
+
+  exitTime = millis();
   tc_clearIntFlag(); // REQUIRED at end of TC5_Handler.
-}*/
+}
