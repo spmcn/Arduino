@@ -17,11 +17,12 @@ SdFile root;
 // Arduino Ethernet shield: pin 4
 // Adafruit SD shields and modules: pin 10
 // Sparkfun SD shield: pin 8
-// MKRZero SD: SDCARD_SS_PIN
-uint8_t chipSelectPin = 2;
-uint8_t mosiPin = 19;
-uint8_t misoPin = 21;
-uint8_t sckPin = 20;
+// MKRZero SD: 
+uint8_t sckSpeed = SPI_HALF_SPEED;
+uint8_t chipSelectPin = 23;
+int8_t mosiPin = 19;
+int8_t misoPin = 21;
+int8_t sckPin = 20;
 
 void setup() {
   // Open serial communications and wait for port to open:
@@ -35,7 +36,7 @@ void setup() {
 
   // we'll use the initialization code from the utility libraries
   // since we're just testing if the card is working!
-  if (!card.init(SPI_HALF_SPEED, chipSelectPin, mosiPin, misoPin, sckPin)) {
+  if (!card.init(sckSpeed, chipSelectPin, mosiPin, misoPin, sckPin)) {
     Serial.println("initialization failed. Things to check:");
     Serial.println("* is a card inserted?");
     Serial.println("* is your wiring correct?");
