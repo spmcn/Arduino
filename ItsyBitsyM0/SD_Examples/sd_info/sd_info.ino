@@ -1,8 +1,8 @@
 /*
  * Currently will not compile. In the process of figuring out how to make
  * this work by looking at the included libraries. Line 38 is the one that
- * has the error, but there seems to be an init function that matches what
- * I currently have, so I'm not sure why it won't compile.
+ * has the error, but there seems to be an init function in Sd2Card that 
+ * matches what I currently have, so I'm not sure why it won't compile.
  */
 
 #include <SPI.h>
