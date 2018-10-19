@@ -8,7 +8,6 @@
 // to partition and create the filesystem.
 #include "utility/ff.h"
 
-
 // Configuration of the flash chip pins and flash fatfs object.
 // You don't normally need to change these if using a Feather/Metro
 // M0 express board.
@@ -20,6 +19,7 @@
 Adafruit_SPIFlash flash(FLASH_SS, &FLASH_SPI_PORT);     // Use hardware SPI
 Adafruit_W25Q16BV_FatFs fatfs(flash);
 
+#define WAIT 3 // seconds to wait until formatting
 
 boolean r = false; // TRUE: READING, FALSE: WRITING
 boolean imu_present = false;
@@ -74,14 +74,14 @@ void setup() {
     }
     else Serial.println(" Done!");
     
-    Serial.print("Enabling sensors...");
+    Serial.print("Enabling sensors ");
     // Use setSensors to turn on or off MPU-9250 sensors.
     // Any of the following defines can be combined:
     // INV_XYZ_GYRO, INV_XYZ_ACCEL, INV_XYZ_COMPASS,
     // INV_X_GYRO, INV_Y_GYRO, or INV_Z_GYRO
     // Enable all sensors:
     imu.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
-    Serial.println(" Done !");
+    Serial.println(" Done!");
 
     Serial.print("Setting sensor options...");
     // Gyro options are +/- 250, 500, 1000, or 2000 dps
@@ -89,7 +89,7 @@ void setup() {
     Serial.print("... Gyro Done! ");
     // Accel options are +/- 2, 4, 8, or 16 g
     imu.setAccelFSR(2); // Set accel to +/-2g
-    Serial.print("... Accel Done! ");
+    Serial.println("... Accel Done! ");
     // Note: the MPU-9250's magnetometer FSR is set at 
     // +/- 4912 uT (micro-tesla's)
   
@@ -107,7 +107,7 @@ void setup() {
     // set using the setCompassSampleRate() function.
     // This value can range between: 1-100Hz
     imu.setCompassSampleRate(10); // Set mag rate to 10Hz
-    Serial.println("IMU is ready to make measurements!\n\n");
+    Serial.println("IMU is ready to make measurements!\n");
   }
 
   else Serial.println("Sensor readings will be assigned random numbers.");
@@ -140,18 +140,25 @@ void loop() {
         Serial.print(c);
       }
 
+      Serial.print("Total size of file (bytes): ");
+      Serial.print(dataFile.size());
+      Serial.print(" (");
+      Serial.print((float)(dataFile.size())/(1024*1024),DEC);
+      Serial.println(" MB)");
       Serial.println();
+
+      dataFile.close();
     }
     // copied from fatfs_datalogging.ino example
   
     else{
-      if ( imu_present && imu.dataReady() ) imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
-      
+          
       File dataFile = fatfs.open(FILE_NAME, FILE_WRITE);
       if (dataFile) {
-        long accelX, accelY, accelZ;
-        if(imu_present)
+        int16_t accelX, accelY, accelZ;
+        if(imu_present && imu.dataReady())
         {
+          imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
           accelX = imu.ax;
           accelY = imu.ay;
           accelZ = imu.az; 
@@ -185,7 +192,7 @@ void loop() {
     }
     
     // Wait 1 seconds.
-    delay(1000L);    
+    delay(1000L);
   }
 }
 
@@ -198,10 +205,12 @@ int format(){
   }
   Serial.print("Flash chip JEDEC ID: 0x"); Serial.println(flash.GetJEDECID(), HEX);
 
-  int countdown = 5;
+  int countdown = WAIT;
   Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   Serial.println("This sketch will ERASE ALL DATA on the flash chip and format it with a new filesystem!");
-  Serial.println("Flash will be formated in 5 seconds... Type 'STOP' to prevent formatting.");
+  Serial.print("Flash will be formated in ");
+  Serial.print(WAIT);
+  Serial.println(" seconds... Type 'STOP' to prevent formatting.");
   Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   Serial.setTimeout(1000);
   while(countdown){
