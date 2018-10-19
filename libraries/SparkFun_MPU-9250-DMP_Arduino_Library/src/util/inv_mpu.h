@@ -21,13 +21,6 @@
 #ifndef _INV_MPU_H_
 #define _INV_MPU_H_
 
-// Brent added for Arduino workaround...
-#include "compiler_options.h"
-// Unhard coding the I2C address to account for the I2C Slave Address LSB pin
-// AD0 = 0 => 0b1101000 | 0x68
-// AD0 = 1 => 0b1101001 | 0x69
-#define I2C_ADDRESS (0x68)  // AD0 low
-
 #define INV_X_GYRO      (0x40)
 #define INV_Y_GYRO      (0x20)
 #define INV_Z_GYRO      (0x10)
@@ -66,6 +59,7 @@ struct int_param_s {
 #define MPU_INT_STATUS_DMP_5            (0x2000)
 
 /* Set up APIs */
+int set_int_enable(unsigned char enable);
 int mpu_init(struct int_param_s *int_param);
 int mpu_init_slave(void);
 int mpu_set_bypass(unsigned char bypass_on);

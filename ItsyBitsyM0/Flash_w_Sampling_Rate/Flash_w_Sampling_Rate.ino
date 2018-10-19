@@ -28,6 +28,7 @@ int sample_cycles = 0;
 
 unsigned long enterTime = 0;
 unsigned long exitTime = 0;
+
 void setup() {
   Serial.begin(115200);
   while(!Serial); // wait until Serial is ready
@@ -44,15 +45,17 @@ void setup() {
     Serial.println("Error, failed to mount filesystem");
     while(1);
   }
+  
   Serial.println("Mounted filesystem");
   
   tc_config(sampleRate,7);    //Sean: changed from 0 to 7
   tc_start();                 //Sean: timer should be working now
 
   // Serial outputs to test TC5_Handler functions
+  exitTime = millis();
   Serial.print("Starting time: ");
-  Serial.print(millis());
-  Serial.print(" ms");
+  Serial.print(exitTime);
+  Serial.println(" ms");
 }
 
 void loop() {
@@ -67,47 +70,67 @@ void TC5_Handler (void) {
   Serial.print(enterTime - exitTime);
   Serial.println(" ms");
   
-  Serial.print("Entering TC5_Handler at: ");
+  Serial.print("--- Entering TC5_Handler at: ");
   Serial.print(millis());
-  Serial.println(" ms");
-  /*
+  Serial.println(" ms ---");
+
+  Serial.print("Count: ");
+  Serial.println(count);
+
+  // begin modifying data
   File dataFile = fatfs.open(FILE_NAME,FILE_WRITE);
+  
   if(dataFile){
+    Serial.println("Datafile exists.");
     if(count>9 && count<109) tc_setFreq(10);
-    else if(count>108){
+    else if(count == 109)
+    {
       tc_setFreq(1);
       count = 0;
       sample_cycles++;
     }
-    int reading = random(0,100);
-    dataFile.print("Sensor #1");
-    dataFile.print(",");
-    dataFile.print(reading, DEC);
+
+    Serial.print("Writing to file... ");
+    // put the current time into the reading
+    int reading = millis();
+    dataFile.print("Sensor #1"); Serial.print("1... ");
+    dataFile.print(","); Serial.print("2... ");
+    dataFile.print(reading, DEC); Serial.print("3... ");
     dataFile.println();
+    Serial.println("Done!");
+    
+    Serial.print("Closing file... ");
     dataFile.close();
+    Serial.println("Done!");
   }
   else {
     Serial.println("Failed to open file for write.");
+    Serial.println("Please fix . . .");
+    while(1);
   }
-  if(stateLED == true) {
-    digitalWrite(LED_PIN,HIGH);
-  } else {
-    digitalWrite(LED_PIN,LOW);
-  }
+
+  Serial.println("Toggling LED . . .");
+  if(stateLED == true) digitalWrite(LED_PIN,HIGH);
+  else digitalWrite(LED_PIN,LOW);
+
+  
   stateLED = !stateLED;
-  count++;
+ 
   if(sample_cycles>5){
     tc_disable();
     Serial.println("Done sampling.");
   }
-  */
-
-
-  Serial.print("Exiting TC5_Handler at: ");
-  Serial.print(millis());
-  Serial.println(" ms");
-  Serial.println();
-
+  
+  count++;
   exitTime = millis();
+  
+  Serial.print("--- Exiting TC5_Handler at: ");
+  Serial.print(exitTime);
+  Serial.println(" ms ---");
+  Serial.print("Total time spent in handler: ");
+  Serial.print(exitTime - enterTime);
+  Serial.println(" ms\n\n");
+  exitTime = millis();
+  
   tc_clearIntFlag(); // REQUIRED at end of TC5_Handler.
 }
