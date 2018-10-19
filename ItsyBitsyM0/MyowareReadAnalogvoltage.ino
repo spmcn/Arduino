@@ -10,6 +10,7 @@
   http://www.arduino.cc/en/Tutorial/AnalogInOutSerial
 */
 
+
 // These constants won't change. They're used to give names to the pins used:
 const int analogInPin = A0;  // Analog input pin that the potentiometer is attached to
 const int analogOutPin = 9; // Analog output pin that the LED is attached to
@@ -36,3 +37,86 @@ void loop() {
   // converter to settle after the last reading:
   delay(2); 
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// add smoothing if useful 
+// add sd card data transfer-- below example code to tweak for sEMG
+// code from http://scholarslab.org/makerspace/saving-arduino-sensor-data/
+/*
+// SPI and SD libraries. SPI for connecting SD card to SPI bus.
+#include <SPI.h>
+#include <SD.h>
+const int sdPin = 4;
+ 
+// Temperature pin set to analog 0
+const int temPin = 0;
+ 
+// Delay time. How often to take a temperature reading, in miliseconds
+// 20 minutes = 1200000 milliseconds
+const int delayTime = 1200000;
+ 
+// File variable
+File tempsFile;
+ 
+ 
+ 
+void setup() {
+  // Serial output for when connected to computer
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+ 
+  Serial.print("Initializing SD card...");
+  if(!SD.begin(sdPin)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("Initialization done.");
+ 
+  tempsFile = SD.open("temps.txt", FILE_WRITE);
+ 
+  if (tempsFile) {
+    Serial.println("Printing temperatures");
+    tempsFile.println("Printing temperatures:");
+    tempsFile.close();
+    Serial.println("Done.");
+  } else {
+    Serial.println("Error opening file in setup.");
+  }
+ 
+}
+ /*
+void loop() {
+  /********************/
+  // Open SD card for writing
+  
+  /*
+  tempsFile = SD.open("rawEMG.txt", FILE_WRITE);
+  
+ 
+    // write temps to SD card
+    tempsFile.print("Voltage: ");
+    tempsFile.print(voltage);
+ 
+ 
+    // close the file
+    tempsFile.close();
+  } else {
+    Serial.println("Error opening file in loop.");
+  }
+ 
+ 
+  delay(delayTime);
+ 
+}
+ 
+float getVoltage(int pin)
+{
+  return (analogRead(pin) * 0.004882814);
+} */
+  
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
