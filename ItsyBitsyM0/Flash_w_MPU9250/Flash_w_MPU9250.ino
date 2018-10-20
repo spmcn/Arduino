@@ -40,11 +40,7 @@ void setup() {
   // format and mount flash file system
   if(format()) Serial.println("\n\nFormatting has been stopped...");
 
-  // Call imu.begin() to verify communication with and
-  // initialize the MPU-9250 to it's default values.
-  // Most functions return an error code - INV_SUCCESS (0)
-  // indicates the IMU was present and successfully set up
-
+  // ask if IMU is present
   while(1)
   {
     Serial.println("Do you have an IMU present? (Y/N)");
@@ -66,6 +62,11 @@ void setup() {
   
   if(imu_present)
   {
+    // Call imu.begin() to verify communication with and
+    // initialize the MPU-9250 to it's default values.
+    // Most functions return an error code - INV_SUCCESS (0)
+    // indicates the IMU was present and successfully set up
+    
     Serial.print("Turning on IMU...");
     if(imu.begin() != INV_SUCCESS)
     {
@@ -115,13 +116,20 @@ void setup() {
 
 void loop() {
 
+  // Stop storing/reading data after a certain number of reads
+  
   if(total > total_max)
   {
     Serial.println("\nCompleted sensor storage/reading");
     while(1) delay(100);
   }
-  
-  else{    
+
+ 
+  else{
+
+    // After storing 5 sensor readings, 
+    // read the file to verify correct operation
+    
     if(++count > 5)
     {
       total++;
@@ -149,10 +157,10 @@ void loop() {
 
       dataFile.close();
     }
-    // copied from fatfs_datalogging.ino example
-  
+    
     else{
-          
+
+      // Read sensor and write sensor data to file
       File dataFile = fatfs.open(FILE_NAME, FILE_WRITE);
       if (dataFile) {
         int16_t accelX, accelY, accelZ;
@@ -180,6 +188,7 @@ void loop() {
         dataFile.print(",");
         dataFile.print(accelZ, DEC);
         dataFile.println();
+        
         // Finally close the file when done writing.  This is smart to do to make
         // sure all the data is written to the file.
         dataFile.close();
@@ -204,8 +213,6 @@ int format(){
     while(1);
   }
   Serial.print("Flash chip JEDEC ID: 0x"); Serial.println(flash.GetJEDECID(), HEX);
-
-  int countdown = WAIT;
   Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   Serial.println("This sketch will ERASE ALL DATA on the flash chip and format it with a new filesystem!");
   Serial.print("Flash will be formated in ");
@@ -213,6 +220,8 @@ int format(){
   Serial.println(" seconds... Type 'STOP' to prevent formatting.");
   Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   Serial.setTimeout(1000);
+
+  int countdown = WAIT;
   while(countdown){
     if(Serial.find("STOP")) return 1;
     Serial.print(countdown--);
