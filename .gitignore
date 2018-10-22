@@ -1,0 +1,5 @@
+# Ignore developments on local machine   # 
+# that shouldn't be commited to the repo #
+##########################################
+
+local/
