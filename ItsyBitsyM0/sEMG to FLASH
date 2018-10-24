@@ -71,54 +71,6 @@ void setup() {
     }
   }
 
-
-  if (sEMG_present)
-  {
-    // Call sEMG.begin() to verify communication with and
-    // initialize the MPU-9250 to it's default values.
-    // Most functions return an error code - INV_SUCCESS (0)
-    // indicates the IMU was present and successfully set up
-
-    Serial.print("Turning on sEMG...");
-    if (sEMG.begin() != INV_SUCCESS)
-    {
-      Serial.println("There has been an error initializing the sEMG");
-      while (1) delay(100);
-    }
-    else Serial.println(" Done!");
-
-    Serial.print("Enabling sensor ");
-    // Use setSensors to turn on or off MPU-9250 sensors.
-    // Any of the following defines can be combined:
-    // INV_XYZ_GYRO, INV_XYZ_ACCEL, INV_XYZ_COMPASS,
-    // INV_X_GYRO, INV_Y_GYRO, or INV_Z_GYRO
-    // Enable all sensors:
-    sEMG.setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
-    Serial.println(" Done!");
-
-    Serial.print("Setting sensor options...");
-    // Gyro options are +/- 250, 500, 1000, or 2000 dps
-    imu.setGyroFSR(250); // Set gyro to 2000 dps
-    Serial.print("... Gyro Done! ");
-    // Accel options are +/- 2, 4, 8, or 16 g
-    imu.setAccelFSR(2); // Set accel to +/-2g
-    Serial.println("... Accel Done! ");
-    // Note: the MPU-9250's magnetometer FSR is set at
-    // +/- 4912 uT (micro-tesla's)
-
-  }
-
-  else Serial.println("Sensor readings will be assigned random numbers.");
-
-  // Write headers to file
-  File dataFile = fatfs.open(FILE_NAME, FILE_WRITE);
-  if (dataFile)
-  {
-    dataFile.println("Time,Ax,Ay,Az");
-    dataFile.close();
-  }
-}
-
 void loop() {
 
   // Stop storing/reading data after a certain number of reads
@@ -149,19 +101,17 @@ void loop() {
       // Read sensor and write sensor data to file
       File dataFile = fatfs.open(FILE_NAME, FILE_WRITE);
       if (dataFile) {
-        int16_t accelX, accelY, accelZ;
-        if (imu_present && imu.dataReady())
+        int16_t sEMGValue;
+        if (sEMG_present && sEMG.dataReady())
         {
-          imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
-          accelX = imu.ax;
-          accelY = imu.ay;
-          accelZ = imu.az;
+          imu.update(UPDATE_sEMGValue);
+          sEMGValue = analogread(analogInPin);
+          
         }
         else
         {
-          accelX = random(-100, 100);
-          accelY = random(-100, 100);
-          accelZ = random(-100, 100);
+          sEMGValue = random(-5,-1);
+          
         }
 
         // Write a line to the file.
@@ -175,18 +125,14 @@ void loop() {
         if (rtc.getSeconds() < 10) dataFile.print("0");
         dataFile.print(rtc.getSeconds());
         dataFile.print(",");
-        dataFile.print(accelX, DEC);
-        dataFile.print(",");
-        dataFile.print(accelY, DEC);
-        dataFile.print(",");
-        dataFile.print(accelZ, DEC);
+        dataFile.print(sEMGValue, DEC);
         dataFile.println();
 
         // Finally close the file when done writing.  This is smart to do to make
         // sure all the data is written to the file.
         dataFile.close();
         Serial.print("Wrote new measurement to data file: ");
-        Serial.println("(ax, ay, az): (" + String(accelX) + ", " + String(accelY) + ", " + String(accelZ) + ")");
+        Serial.println("(sEMGValue): (" + String(sEMGValue) ")");
       }
       else {
         Serial.println("Failed to open data file for writing!");
