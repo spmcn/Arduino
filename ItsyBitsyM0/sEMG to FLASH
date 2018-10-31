@@ -31,8 +31,8 @@ unsigned int total_max = 2;
 unsigned long startTime = 0;
 unsigned long endTime = 0;
 
+const int analogOutPin = A0;
 
-MPU9250_DMP imu;
 RTCZero rtc;
 
 void setup() {
@@ -70,6 +70,7 @@ void setup() {
       break;
     }
   }
+}
 
 void loop() {
 
@@ -102,10 +103,10 @@ void loop() {
       File dataFile = fatfs.open(FILE_NAME, FILE_WRITE);
       if (dataFile) {
         int16_t sEMGValue;
-        if (sEMG_present && sEMG.dataReady())
+        if (sEMG_present)
         {
-          imu.update(UPDATE_sEMGValue);
-          sEMGValue = analogread(analogInPin);
+        
+          sEMGValue = analogRead(analogOutPin);
           
         }
         else
@@ -132,7 +133,7 @@ void loop() {
         // sure all the data is written to the file.
         dataFile.close();
         Serial.print("Wrote new measurement to data file: ");
-        Serial.println("(sEMGValue): (" + String(sEMGValue) ")");
+        Serial.println("(sEMGValue): (String(sEMGValue)");
       }
       else {
         Serial.println("Failed to open data file for writing!");
