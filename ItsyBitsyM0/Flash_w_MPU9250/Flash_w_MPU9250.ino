@@ -1,6 +1,18 @@
 #include <SPI.h>
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_SPIFlash_FatFs.h>
+/* 
+ *  Must distinguish between Adafruit SPI
+ *  and SD.h library classes
+ */
+typedef File FlashFile;
+
+#undef FILE_READ
+#undef FILE_WRITE
+#define FLASH_READ FA_READ
+#define FLASH_WRITE (FA_READ | FA_WRITE | FA_OPEN_APPEND)
+
+#include <SD.h>
 #include <SparkFunMPU9250-DMP.h>
 #include <RTCZero.h>
 
@@ -53,7 +65,7 @@ void setup() {
   if (format()) Serial.println("\n\nFormatting has been stopped...");
 
   // ask if IMU is present
-  while (1)
+  while (1) 
   {
     Serial.println("Do you have an IMU present? (Y/N)");
     while (Serial.available() == 0) delay(100);
@@ -126,7 +138,7 @@ void setup() {
   else Serial.println("Sensor readings will be assigned random numbers.");
 
   // Write headers to file
-  File dataFile = fatfs.open(FILE_NAME, FILE_WRITE);
+  FlashFile dataFile = fatfs.open(FILE_NAME, FLASH_WRITE);
   if (dataFile)
   {
     dataFile.println("Time,Ax,Ay,Az");
@@ -162,7 +174,7 @@ void loop() {
     else {
 
       // Read sensor and write sensor data to file
-      File dataFile = fatfs.open(FILE_NAME, FILE_WRITE);
+      FlashFile dataFile = fatfs.open(FILE_NAME, FLASH_WRITE);
       if (dataFile) {
         int16_t accelX, accelY, accelZ;
         if (imu_present && imu.dataReady())
@@ -282,7 +294,7 @@ void printTime() {
 }
 
 void printFileContents(String fileName) {
-  File dataFile = fatfs.open(fileName, FILE_READ);
+  FlashFile dataFile = fatfs.open(fileName, FLASH_READ);
   if (!dataFile) {
     Serial.println("Error, failed to open file for reading!");
     while (1);
