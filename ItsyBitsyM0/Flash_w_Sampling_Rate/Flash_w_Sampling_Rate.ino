@@ -1,11 +1,3 @@
-/* 
- *  Currently does not run. Uploading it to the ItysBitsy results in
- *  not being able to connect to it via serial com port until it's restarted
- *  in boot mode. Will run if lines 46 and 47 are commented out, so I'm
- *  thinking it could be something with setting the baud rate to 115200
- *  that conflicts with Sean's library.
- */
-
 #include <Sampling.h>
 #include <SPI.h>
 #include <Adafruit_SPIFlash.h>
