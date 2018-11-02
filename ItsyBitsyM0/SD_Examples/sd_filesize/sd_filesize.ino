@@ -12,6 +12,8 @@
 Sd2Card card;
 SdVolume volume;
 SdFile root;
+File myFile;
+char toWrite;
 
 // change this to match your SD shield or module;
 // Arduino Ethernet shield: pin 4
@@ -32,39 +34,43 @@ void setup() {
   // we'll use the initialization code from the utility libraries
   // since we're just testing if the card is working!
   //if (!card.init(sckSpeed, chipSelectPin, mosiPin, misoPin, sckPin)) {
-  if (!card.init(SPI_HALF_SPEED, chipSelect)) {
+  if (!card.init(SPI_HALF_SPEED,chipSelect)) {
     Serial.println("initialization failed. Things to check:");
-    Serial.println("* is a card inserted?");
-    Serial.println("* is your wiring correct?");
-    Serial.println("* did you change the chipSelect pin to match your shield or module?");
     while (1);
   } else {
-    Serial.println("Wiring is correct and a card is present.");
+    Serial.println("Card initialized.");
   }
-
-  // print the type of card
+  
+  if (!SD.begin(chipSelect)){
+    Serial.println("could not write to file");
+  } else {
+    if(SD.exists("test.txt")){
+      SD.remove("test.txt");
+    }
+    myFile = SD.open("test.txt", FILE_WRITE);
+    if(myFile){
+      Serial.print("Writing to test.txt...");
+      for(int i=0; i<200000; i++){
+        if((i%26)==0){
+          myFile.print("\n");
+        }
+        toWrite = (char)((i%26)+65);
+        myFile.print(toWrite);
+      }
+      myFile.close();
+      Serial.println("done.");
+    } else {
+      // if the file didn't open, print an error:
+      Serial.println("error opening test.txt");
+    }
+    
+    if (!volume.init(card)) {
+      Serial.println("Could not find FAT16/FAT32 partition.\nMake sure you've formatted the card");
+      while (1);
+    }
+  }
+  
   Serial.println();
-  Serial.print("Card type:         ");
-  switch (card.type()) {
-    case SD_CARD_TYPE_SD1:
-      Serial.println("SD1");
-      break;
-    case SD_CARD_TYPE_SD2:
-      Serial.println("SD2");
-      break;
-    case SD_CARD_TYPE_SDHC:
-      Serial.println("SDHC");
-      break;
-    default:
-      Serial.println("Unknown");
-  }
-
-  // Now we will try to open the 'volume'/'partition' - it should be FAT16 or FAT32
-  if (!volume.init(card)) {
-    Serial.println("Could not find FAT16/FAT32 partition.\nMake sure you've formatted the card");
-    while (1);
-  }
-
   Serial.print("Clusters:          ");
   Serial.println(volume.clusterCount());
   Serial.print("Blocks x Cluster:  ");
