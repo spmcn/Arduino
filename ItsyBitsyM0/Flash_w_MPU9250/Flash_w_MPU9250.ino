@@ -6,7 +6,6 @@
  *  and SD.h library classes
  */
 typedef File FlashFile;
-
 #undef FILE_READ
 #undef FILE_WRITE
 #define FLASH_READ FA_READ
@@ -19,6 +18,7 @@ typedef File FlashFile;
 // Include the FatFs library header to use its low level functions
 // directly.  Specifically the f_fdisk and f_mkfs functions are used
 // to partition and create the filesystem.
+
 #include "utility/ff.h"
 
 // Configuration of the flash chip pins and flash fatfs object.
@@ -32,7 +32,10 @@ typedef File FlashFile;
 Adafruit_SPIFlash flash(FLASH_SS, &FLASH_SPI_PORT);     // Use hardware SPI
 Adafruit_W25Q16BV_FatFs fatfs(flash);
 
-#define WAIT 3 // seconds to wait until formatting
+
+#include "src/flash_funcs.h"
+
+#define WAIT 1 // seconds to wait until formatting
 
 boolean r = false; // TRUE: READING, FALSE: WRITING
 boolean imu_present = false;
@@ -62,7 +65,7 @@ void setup() {
   startTime = millis();
 
   // format and mount flash file system
-  if (format()) Serial.println("\n\nFormatting has been stopped...");
+  if (format(&flash, FLASH_TYPE, &fatfs, WAIT)) Serial.println("\n\nFormatting has been stopped...");
 
   // ask if IMU is present
   while (1) 
@@ -223,61 +226,6 @@ void loop() {
     // Wait 1 seconds.
     delay(1000L);
   }
-}
-
-int format() {
-
-  // Initialize flash library and check its chip ID.
-  if (!flash.begin(FLASH_TYPE)) {
-    Serial.println("Error, failed to initialize flash chip!");
-    while (1);
-  }
-  Serial.print("Flash chip JEDEC ID: 0x"); Serial.println(flash.GetJEDECID(), HEX);
-  Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  Serial.println("This sketch will ERASE ALL DATA on the flash chip and format it with a new filesystem!");
-  Serial.print("Flash will be formated in ");
-  Serial.print(WAIT);
-  Serial.println(" seconds... Type 'STOP' to prevent formatting.");
-  Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  Serial.setTimeout(1000);
-
-  int countdown = WAIT;
-  while (countdown) {
-    if (Serial.find("STOP")) return 1;
-    Serial.print(countdown--);
-    Serial.print("... ");
-  }
-
-  fatfs.activate();
-
-  // Partition the flash with 1 partition that takes the entire space.
-  Serial.println("\nPartitioning flash with 1 primary partition...");
-  DWORD plist[] = {100, 0, 0, 0};  // 1 primary partition with 100% of space.
-  uint8_t buf[512] = {0};          // Working buffer for f_fdisk function.
-  FRESULT r = f_fdisk(0, plist, buf);
-  if (r != FR_OK) {
-    Serial.print("Error, f_fdisk failed with error code: "); Serial.println(r, DEC);
-    while (1);
-  }
-  Serial.println("Partitioned flash!");
-
-  // Make filesystem.
-  Serial.println("Creating and formatting FAT filesystem (this takes ~60 seconds)...");
-  r = f_mkfs("", FM_ANY, 0, buf, sizeof(buf));
-  if (r != FR_OK) {
-    Serial.print("Error, f_mkfs failed with error code: "); Serial.println(r, DEC);
-    while (1);
-  }
-  Serial.println("Formatted flash!");
-
-  // Test that the file system is mounted
-  if (!fatfs.begin()) {
-    Serial.println("Error, failed to mount newly formatted filesystem!");
-    while (1);
-  }
-  Serial.println("Flash chip successfully formatted with new empty filesystem!");
-
-  return 0;
 }
 
 void printTime() {
