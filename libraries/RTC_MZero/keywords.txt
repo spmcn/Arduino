@@ -1,0 +1,24 @@
+#######################################
+# Syntax Coloring Map For RTC
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+RTC_MZero	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+getHours 				KEYWORD2
+getMinutes			KEYWORD2
+getSeconds 			KEYWORD2
+getMillis 			KEYWORD2
+
+isConfigured		KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################

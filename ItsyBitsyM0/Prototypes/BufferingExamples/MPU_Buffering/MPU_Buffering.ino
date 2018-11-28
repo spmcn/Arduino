@@ -17,6 +17,9 @@ typedef File FlashFile;
 /* Include the SD.h library */
 #include <SD.h>
 
+/* Include the MPU9250 library */
+#include <SparkFunMPU9250-DMP.h>
+
 // Include the FatFs library header to use its low level functions
 // directly.  Specifically the f_fdisk and f_mkfs functions are used
 // to partition and create the filesystem.
@@ -49,12 +52,15 @@ unsigned long startTime;    // time that the program has started
 unsigned long dt;           // time it takes to write to flash file
 FlashFile flashFile;        // file on internal Flash
 SDFile sdFile;              // file on SD card
-const int bufLen = 128;     // buffer length of 128B
+const int bufLen = 512;     // buffer length of 512B
 uint8_t buf[bufLen] = {0};  // buffer to hold our data
 int bufIndex = 0;                  // variable to hold index of buffer
+int memCount = 0;
+bool noSD = false;
 void setup()
 {
   Serial.begin(9600);
+  randomSeed(analogRead(0));
   while(!Serial);
 
   // format and mount flash file system
@@ -62,11 +68,12 @@ void setup()
 
   if (!SD.begin(10)) {
     Serial.println("SD Card initialization failed!");
-    while (1);
+    noSD = true;
+    Serial.println("Continuing without an SD Card . . .");
   }
   
   startTime = millis();
-
+  
   // open flashFile to begin storage of data
   flashFile = fatfs.open(FILE_NAME,FLASH_WRITE);
   
@@ -86,8 +93,15 @@ void loop()
     // close the flashFile
     flashFile.close();
 
-    // print file contents onto SD card
-    printFileContents(FILE_NAME);
+
+    // print data to Serial or SD Card
+    if(noSD)
+    {
+      printToSerial(FILE_NAME);
+    }
+    else {
+      printToSD(FILE_NAME);
+    }
 
     // stop program
     while(1);
@@ -97,7 +111,9 @@ void loop()
   // fill the next space with collected data
   if(bufIndex < bufLen)
   {
-    buf[bufIndex++] = (uint8_t)(random(65,123));
+    // put a new line every 64 characters
+    if((bufIndex+1) % 64 == 0) buf[bufIndex++] = '\n';
+    else buf[bufIndex++] = (uint8_t)(random(65,123));
   }
 
   // if our buffer has been filled,
@@ -105,19 +121,17 @@ void loop()
   // buffer of the internal flash
   else
   {
-    // simply for easier readability when verifying correct operation
-    buf[bufLen-1] = '\n';
 
     // start time to measure
     // how long it takes to write buffer into flash memory
-
+    dt = millis();
     // when flash memory buffer has been filled (512B),
     // it will take significantly longer to actually write
     // the buffer
-    dt = millis();
+    
     flashFile.write(buf,bufLen);
-    i = 0;
-    Serial.println("Filled buffer and stored it, taking " + String(millis()-dt) + " ms");
+    Serial.println("Filled our buffer and stored it, taking " + String(millis()-dt) + " ms");
+    bufIndex = 0;
 
     /* 
      * it's important NOT to close the flashfile,
@@ -133,7 +147,45 @@ void loop()
   
 }
 
-void printFileContents(String fileName) {
+void printToSerial(String fileName) {
+
+  // flashFile should have been closed prior to printing file contents
+  FlashFile dataFile = fatfs.open(fileName, FLASH_READ);
+  if (!dataFile) {
+    Serial.println("Error, failed to open file for reading!");
+    while (1);
+  }
+  
+  // track time spent writing data
+  dt = millis();
+
+  // read all the data and print it out a character (1B) at a time
+  // (stopping when end of file is reached)
+  while (dataFile.available()) {
+    char c;
+    dataFile.read(&c,1);
+    Serial.print(c);
+  }
+
+  // depending on our data, would it be faster to read
+  // data 1B at a time, or 4B at a time? Something to test.
+  dt = millis()-dt;
+  Serial.println("It took " + String(dt) + " ms to print to serial");
+
+  
+  // Print the total size of file on flash memory
+  Serial.print("Total size of flash file (bytes): ");
+  Serial.print(dataFile.size());
+  Serial.print(" (");
+  Serial.print((float)(dataFile.size()) / (1024 * 1024), DEC);
+  Serial.println(" MB)");
+  Serial.println();
+
+  // the files can now be closed
+  dataFile.close();
+}
+
+void printToSD(String fileName) {
 
   // flashFile should have been closed prior to printing file contents
   FlashFile dataFile = fatfs.open(fileName, FLASH_READ);
@@ -165,8 +217,8 @@ void printFileContents(String fileName) {
 
   // depending on our data, would it be faster to read
   // data 1B at a time, or 4B at a time? Something to test.
-  
-  Serial.println("It took " + String(millis() - dt) + " ms to write to SD");
+  dt = millis()-dt;
+  Serial.println("It took " + String(dt) + " ms to write to SD");
 
   
   // Print the total size of file on flash memory
