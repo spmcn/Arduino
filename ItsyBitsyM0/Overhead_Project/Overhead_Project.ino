@@ -65,6 +65,8 @@ const int bufLen = 504;     // buffer length of 504B (21 data reads x 24B)
 uint8_t buf[bufLen] = {0};  // buffer to hold our data
 int i = 0;                  // variable to hold index of buffer
 
+const int analogOutPin = A1; // Analog input for sEMG
+
 MPU9250_DMP imu;
 bool inOverhead = false;
 unsigned char mcount = 0;
