@@ -177,7 +177,7 @@ void loop() {
       unsigned long t;
       float g[3];
       calcIMUData(&p, g, &t);
-      unsigned int semg = random(0,1024); // simulate sEMG data
+      unsigned int semg = analogRead(analogOutPin);; // RAW sEMG data
       {
         if (inOverhead || mcount == M)
         {
