@@ -19,7 +19,7 @@ order = 4;
 filtsig = filter(b,a,emg);  
 
 
-% fft of filtered emg
+% fft of filtered emg. If peak of fft is shited to left then there is onset of fatigue.
 fft_emg1 = fft(emg_bandpass);
 fft_emg2 = fft(emg_filtsig); 
 
