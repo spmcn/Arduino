@@ -23,7 +23,7 @@ filtsig = filter(b,a,fft_emg);  %filtered signal
 emg_freq = fft(emg_bandpass);
 
 % Get median emg frequency
-% If median emg is sfhifted to lower frequencies, then there is onset of fatigue
+% If median emg is shifted to lower frequencies, then there is onset of fatigue
 mid_emg = medfreq(emg_freq);
 
 mid_emg2 = medfreq(filtsig);
