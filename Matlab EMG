@@ -5,7 +5,7 @@ fs =
 % Not sure if fft is needed
 %fft_emg = fft(emg);
 
-% Minimum and maximum frequencies 
+% Minimum and maximum frequencies in Hz, possibility of need to change to kHZ
 wpass = [20,500];
 
 % Bandpass filter for fatigue emg signal
@@ -28,4 +28,5 @@ mid_emg = medfreq(emg_bandpass);
 mid_emg2 = medfreq(filtsig);
 
 % Get mean emg frequency
-avg_emg = meanfreq(emg_freq);
+avg_emg = meanfreq(emg_bandpass);
+avg_emg2 = meanFreq(filtsig);
