@@ -14,7 +14,7 @@ emg_bandpass = bandpass(fft_emg, wpass, fs);
 % cutoff in kHz
 fcutlow = 0.02;
 fcuthigh = 0.5;
-order = 2;
+order = 4;
 [b,a] = butter(order,[fcutlow,fcuthigh]/(fs/2),'bandpass');
 
 %filtered emg signal
