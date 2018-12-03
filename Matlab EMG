@@ -2,11 +2,13 @@
 %fs is sampling frequency
 fs = 
 
+fft_emg = fft(emg);
+
 % Minimum and maximum frequencies 
 wpass = [20,500];
 
 % Bandpass filter for fatigue emg signal
-emg_bandpass = bandpass(emg, wpass, fs);
+emg_bandpass = bandpass(fft_emg, wpass, fs);
 
 % Butterworth Bandpass filter
 fcutlow = 0.02;
@@ -15,7 +17,7 @@ order = 2;
 [b,a] = butter(order,[fcutlow,fcuthigh]/(fs/2),'bandpass');
 
 %filtered signal
-filtsig = filter(b,a,emg);  %filtered signal
+filtsig = filter(b,a,fft_emg);  %filtered signal
 
 % Get freqencies of emg signal
 emg_freq = fft(emg_bandpass);
@@ -23,6 +25,8 @@ emg_freq = fft(emg_bandpass);
 % Get median emg frequency
 % If median emg is sfhifted to lower frequencies, then there is onset of fatigue
 mid_emg = medfreq(emg_freq);
+
+mid_emg2 = medfreq(filtsig);
 
 % Get mean emg frequency
 avg_emg = meanfreq(emg_freq);
