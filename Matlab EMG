@@ -2,9 +2,6 @@
 %fs is sampling frequency
 fs = 
 
-% Not sure if fft is needed
-%fft_emg = fft(emg);
-
 % Minimum and maximum frequencies in Hz, possibility of need to change to kHZ
 wpass = [20,500];
 
@@ -21,6 +18,12 @@ order = 4;
 %filtered emg signal
 filtsig = filter(b,a,emg);  
 
+
+% fft of filtered emg
+fft_emg1 = fft(emg_bandpass);
+fft_emg2 = fft(emg_filtsig); 
+
+
 % Get median emg frequency
 % If median emg is shifted to lower frequencies, then there is onset of fatigue
 
@@ -30,3 +33,9 @@ mid_emg2 = medfreq(filtsig);
 % Get mean emg frequency
 avg_emg = meanfreq(emg_bandpass);
 avg_emg2 = meanFreq(filtsig);
+
+
+
+
+
+
