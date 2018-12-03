@@ -5,7 +5,7 @@ fs =
 % Minimum and maximum cutoff frequencies in Hz, possibility of need to change to kHZ
 wpass = [20,500];
 
-% Bandpass filter for fatigue emg signal
+% Bandpass filter emg signal
 emg_bandpass = bandpass(emg, wpass, fs);
 
 % Butterworth Bandpass filter
@@ -15,7 +15,7 @@ fcuthigh = 0.5;
 order = 4;
 [b,a] = butter(order,[fcutlow,fcuthigh]/(fs/2),'bandpass');
 
-%filtered emg signal
+%Butterworth bandpass filtered emg signal
 filtsig = filter(b,a,emg);  
 
 
