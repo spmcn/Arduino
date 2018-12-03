@@ -2,7 +2,7 @@
 %fs is sampling frequency
 fs = 
 
-% Minimum and maximum frequencies in Hz, possibility of need to change to kHZ
+% Minimum and maximum cutoff frequencies in Hz, possibility of need to change to kHZ
 wpass = [20,500];
 
 % Bandpass filter for fatigue emg signal
