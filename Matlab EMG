@@ -11,7 +11,7 @@ wpass = [20,500];
 emg_bandpass = bandpass(fft_emg, wpass, fs);
 
 % Butterworth Bandpass filter
-& cutoff in kHz
+% cutoff in kHz
 fcutlow = 0.02;
 fcuthigh = 0.5;
 order = 2;
